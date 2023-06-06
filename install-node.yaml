@@ -1,0 +1,42 @@
+---
+- name: install dependecys
+  hosts: node
+  tasks:
+
+    - name: apt update
+      apt: 
+        update_cache: yes
+        force_apt_get: yes
+        cache_valid_time: 3600
+
+    - name: install npm and node
+      apt:
+        pkg:
+          - nodejs
+          - npm
+
+- name: copy tar of app
+  hosts: node
+  tasks:
+    - name: unpack nodejs
+      unarchive:
+        src: /root/mynodeapp-cicd-project-main.tar.gz
+        dest: /root/
+   
+    - name: install depen
+      npm:
+        path: ~/mynodeapp-cicd-project-main/app
+    
+    - name: run serverjs
+      command: 
+        chdir: /root/mynodeapp-cicd-project-main/app
+        cmd: node server
+      async: 1000
+      poll: 0
+
+    - name: Ensure app is running
+      shell: ps aux | grep node
+      register: app_status
+    - debug: msg={{app_status}} 
+
+
